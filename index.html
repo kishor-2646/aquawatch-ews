@@ -696,7 +696,7 @@
       <div class="metric-card">
         <div class="metric-icon"><i class="fas fa-flask"></i></div>
         <div class="metric-data">
-          <span class="metric-label">pH</span>
+          <span class="metric-label">pH (indicative)</span>
           <span class="metric-value" id="ph-val">--</span>
         </div>
       </div>
@@ -711,7 +711,7 @@
         <div class="metric-icon"><i class="fas fa-wind"></i></div>
         <div class="metric-data">
           <span class="metric-label">Dissolved O₂</span>
-          <span class="metric-value" id="do-val">-- mg/L</span>
+          <span class="metric-value" id="do-val">N/A</span>
         </div>
       </div>
     </section>
@@ -776,7 +776,7 @@
               <th>Temp (°C)</th>
               <th>pH</th>
               <th>Turbidity (NTU)</th>
-              <th>DO (mg/L)</th>
+              <th>DO</th>
               <th>AI Risk Status</th>
               <th>Top Risk</th>
             </tr>
@@ -888,17 +888,52 @@
     updateClock();
     setInterval(updateClock, 60000);
 
-    // ── Disease risk calculation (Heuristics) ──
-    function calculateDiseaseRisks(temp, ph, turb, do2) {
-      const risks = {};
-      risks.Cholera = Math.min(100, (Math.max(0, (turb - 5) * 4) + Math.max(0, (8 - do2) * 10)));
-      risks.Typhoid = Math.min(100, (Math.max(0, (turb - 8) * 5) + Math.max(0, (7 - do2) * 5)));
-      const phDeviation = Math.max(0, Math.abs(ph - 7.0) - 0.5) * 10;
-      risks.Dysentery = Math.min(100, (Math.max(0, (turb - 5) * 3) + phDeviation));
-      risks.Gastroenteritis = Math.min(100, (Math.max(0, (temp - 28) * 5) + Math.max(0, (turb - 5) * 3)));
-      risks['Hepatitis A'] = Math.min(100, (Math.max(0, (turb - 5) * 3) + Math.max(0, (7 - do2) * 8)));
+    // ── Disease risk index (rule-based, explainable) ──
+    // Documented in docs/DISEASE_CLASSIFICATION.md
+    // Only MEASURED inputs are used: turbidity (contamination indicator) and
+    // temperature (pathogen growth/survival amplifier). Dissolved oxygen is NOT
+    // used because there is no DO sensor. pH is optional (sensor not reliable).
+    const USE_PH_IN_RISK = false;
 
-      Object.keys(risks).forEach(key => { risks[key] = Math.min(100, Math.round(risks[key])); });
+    // Piecewise-linear turbidity index: 0 (<=1 NTU) .. 1 (>=50 NTU). WHO: <1 ideal, <=5 acceptable.
+    const TURB_INDEX_POINTS = [[1, 0], [5, 0.2], [25, 0.6], [50, 1]];
+    function turbidityIndex(ntu) {
+      const p = TURB_INDEX_POINTS;
+      if (ntu <= p[0][0]) return 0;
+      if (ntu >= p[p.length - 1][0]) return 1;
+      for (let i = 1; i < p.length; i++) {
+        if (ntu <= p[i][0]) {
+          const [x0, y0] = p[i - 1], [x1, y1] = p[i];
+          return y0 + (y1 - y0) * (ntu - x0) / (x1 - x0);
+        }
+      }
+      return 1;
+    }
+    // Temperature index: 0 at <=20 C, 1 at >=32 C (warm water favours bacterial growth)
+    function temperatureIndex(t) { return Math.min(1, Math.max(0, (t - 20) / 12)); }
+
+    // risk = 100 * turbidityIndex * (base + (1 - base) * tempFactor)
+    //   base     = share of risk that remains even when the temperature is unfavourable
+    //   tempFactor = temperatureIndex (warm-favoured) or 1 - temperatureIndex (cool-favoured)
+    const DISEASE_PARAMS = {
+      'Cholera':         { base: 0.5, coolFavoured: false },  // Vibrio cholerae: warm water
+      'Typhoid':         { base: 0.6, coolFavoured: false },  // Salmonella Typhi
+      'Dysentery':       { base: 0.6, coolFavoured: false },  // Shigella
+      'Gastroenteritis': { base: 0.5, coolFavoured: false },  // E. coli / enteric bacteria
+      'Hepatitis A':     { base: 0.6, coolFavoured: true }    // virus persists longer in cool water
+    };
+
+    function calculateDiseaseRisks(temp, ph, turb, _do2_unused) {
+      const tIdx = turbidityIndex(turb);
+      const kIdx = temperatureIndex(temp);
+      const phPenalty = (USE_PH_IN_RISK && (ph < 6.5 || ph > 8.5)) ? 15 : 0;
+      const risks = {};
+      Object.keys(DISEASE_PARAMS).forEach(d => {
+        const { base, coolFavoured } = DISEASE_PARAMS[d];
+        const tempFactor = coolFavoured ? (1 - kIdx) : kIdx;
+        const raw = 100 * tIdx * (base + (1 - base) * tempFactor) + (tIdx > 0 ? phPenalty : 0);
+        risks[d] = Math.min(100, Math.round(raw));
+      });
       return risks;
     }
 
@@ -964,7 +999,7 @@
       els.temp.textContent = data.temperature.toFixed(1) + ' °C';
       els.ph.textContent = data.ph.toFixed(2);
       els.turb.textContent = data.turbidity.toFixed(1) + ' NTU';
-      els.do.textContent = data.dissolved_o2.toFixed(1) + ' mg/L';
+      els.do.textContent = 'N/A (no sensor)';
       if (window.gaugeData) {
         updateGauge('gauge-ph', window.gaugeData.ph, data.ph);
         updateGauge('gauge-turb', window.gaugeData.turb, data.turbidity);
@@ -1038,7 +1073,7 @@
             <td>${entry.temperature.toFixed(1)}</td>
             <td>${entry.ph.toFixed(2)}</td>
             <td>${entry.turbidity.toFixed(1)}</td>
-            <td>${mockDO.toFixed(1)}</td>
+            <td>N/A</td>
             <td class="${statusClass}">${entry.risk_status}</td>
             <td>${diseaseDisplay}</td>
           </tr>`;
@@ -1129,7 +1164,7 @@
     // ── Init ──
     window.onload = function () {
       // Initialize empty gauges
-      const gaugePH = createGauge('gauge-ph', 0, 0, 14, 'pH', '', 8.0, 9.0);
+      const gaugePH = createGauge('gauge-ph', 0, 0, 14, 'pH (indicative)', '', 8.0, 9.0);
       const gaugeTurb = createGauge('gauge-turb', 0, 0, 50, 'Turbidity (NTU)', 'NTU', 20, 30);
       const gaugeTemp = createGauge('gauge-temp', 0, 10, 45, 'Temp (°C)', '°C', 32, 38);
       window.gaugeData = { ph: gaugePH, turb: gaugeTurb, temp: gaugeTemp };

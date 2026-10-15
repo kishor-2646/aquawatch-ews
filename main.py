@@ -129,11 +129,37 @@ class VerifySubscribeRequest(BaseModel):
 # 4. CALIBRATION FUNCTIONS
 # ============================================================
 
+# ---- TURBIDITY CALIBRATION TABLE ------------------------------------------
+# Each row is (raw ADC value from the ESP32, NTU value assigned to that water).
+# Fill these from the Serial Monitor: dip the probe in each prepared water level,
+# wait ~30 s until 'Turbidity Raw' settles, and note the typical value.
+# NOTE: the raw value DROPS as water gets dirtier (less light reaches the sensor).
+# Readings between two rows are linearly interpolated; outside the table they clamp.
+#
+# CURRENT (2-point, measured): clean ~1640 -> 0 NTU, mud ~104 -> 100 NTU.
+# AFTER the 4-level test, replace with e.g.:
+#   (raw_more_dirty,     100.0),
+#   (raw_moderate_dirty,  30.0),
+#   (raw_less_dirty,      10.0),
+#   (raw_clean,            0.0),
+# (No reference turbidimeter is available, so NTU values are nominal targets.)
+TURBIDITY_CAL_POINTS = [
+    (104.0, 100.0),
+    (1640.0, 0.0),
+]
+
+# The pH probe does not respond reliably to solution changes, so by default the ML
+# model is given a neutral pH instead of the measured value. The measured pH is
+# still stored and displayed. Set to True once the pH probe is calibrated.
+USE_MEASURED_PH_IN_MODEL = False
+NOMINAL_PH = 7.0
+
 def calibrate_turbidity(raw_value: float) -> float:
-    if raw_value >= 1640: return 0.0
-    if raw_value <= 100: return 100.0
-    ntu = ((1640.0 - raw_value) / (1640.0 - 100.0)) * 100.0
-    return round(ntu, 2)
+    """Piecewise-linear calibration from TURBIDITY_CAL_POINTS (raw ADC -> NTU)."""
+    pts = sorted(TURBIDITY_CAL_POINTS, key=lambda p: p[0])
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    return round(float(np.interp(raw_value, xs, ys)), 2)
 
 def calibrate_ph(raw_value: float) -> float:
     ph = 7.0 + ((raw_value - 570.0) * 0.01)
@@ -255,7 +281,8 @@ async def receive_sensor_data(data: RawSensorData):
     risk_status = "Unknown"
     if ml_model and scaler:
         try:
-            features = np.array([[cal_ph, cal_turbidity, cal_temp, 15.0]])
+            ph_for_model = cal_ph if USE_MEASURED_PH_IN_MODEL else NOMINAL_PH
+            features = np.array([[ph_for_model, cal_turbidity, cal_temp, 15.0]])
             scaled_features = scaler.transform(features)
             prediction = ml_model.predict(scaled_features)[0]
             risk_status = "High Risk - Outbreak Warning" if prediction == 0 else "Low Risk - Safe"
@@ -283,6 +310,11 @@ async def get_latest_data():
     if not row:
         return {"status": "empty"}
     return {"status": "success", "data": dict(row._mapping)}
+
+@app.get("/api/calibration/turbidity")
+async def preview_turbidity_calibration(raw: float):
+    """Preview: what NTU does the current calibration table give for a raw ADC value?"""
+    return {"raw": raw, "ntu": calibrate_turbidity(raw), "table": TURBIDITY_CAL_POINTS}
 
 @app.get("/api/readings")
 async def get_recent_readings(limit: int = 20):
