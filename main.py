@@ -184,6 +184,37 @@ async def lifespan(app: FastAPI):
         print(f"[ERR] Error loading ML models: {e}")
 
 
+    # Seed demo sensor history if readings table is empty (fresh cloud DB)
+    try:
+        reading_count = await database.fetch_val(
+            sqlalchemy.select(sqlalchemy.func.count()).select_from(readings)
+        )
+        if reading_count == 0:
+            import random
+            from datetime import timedelta
+            random.seed(42)
+            now = datetime.now(timezone.utc)
+            demo_rows = []
+            for i in range(24, 0, -1):
+                ph = round(random.uniform(6.8, 7.4), 2)
+                turb = round(random.uniform(2.0, 9.0), 2)
+                temp = round(random.uniform(24.0, 28.0), 2)
+                status = "Low Risk - Safe"
+                if ml_model and scaler:
+                    try:
+                        feats = scaler.transform(np.array([[ph, turb, temp, 15.0]]))
+                        status = "High Risk - Outbreak Warning" if ml_model.predict(feats)[0] == 0 else "Low Risk - Safe"
+                    except Exception:
+                        pass
+                demo_rows.append({
+                    "district": "Nagaon", "ph": ph, "turbidity": turb, "temperature": temp,
+                    "risk_status": status, "recorded_at": now - timedelta(hours=i)
+                })
+            await database.execute_many(readings.insert(), demo_rows)
+            print("[OK] Seeded demo sensor readings")
+    except Exception as e:
+        print(f"[ERR] Demo readings seed failed: {e}")
+
     if not os.path.exists("static"):
         os.makedirs("static")
 
