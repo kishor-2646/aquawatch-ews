@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AquaWatch · Predictor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+
+  <!-- OneSignal Web Push SDK -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function (OneSignal) {
+      await OneSignal.init({
+        appId: "b5eefbdd-b80e-4a17-925f-d17120e8c6cb",
+        allowLocalhostAsSecureOrigin: true
+      });
+      // Tag this device for district-level filtering
+      OneSignal.User.addTag("district", "Nagaon");
+    });
+  </script>
+
+
+  <style>
+    /* ── Reset & base ── */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #1e293b;
+      line-height: 1.6;
+      min-height: 100vh;
+      /* Image loads from the static folder now */
+      background-image:
+        linear-gradient(rgba(238, 245, 250, 0.2), rgba(238, 245, 250, 0.85)),
+        url('/static/rural%20assam%20image.jpeg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: rgba(255, 255, 255, 0.90);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      font-size: 1.8rem;
+    }
+
+    .logo-text {
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: #0f172a !important;
+    }
+
+    .logo-sub {
+      font-weight: 400;
+      font-size: 0.85rem;
+      color: #3b82f6;
+      background: #dbeafe;
+      padding: 2px 12px;
+      border-radius: 20px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #16a34a;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #16a34a;
+      display: inline-block;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.4;
+      }
+    }
+
+    .datetime {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+
+    /* ── Main ── */
+    .main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 32px 40px;
+    }
+
+    .hero {
+      margin-bottom: 32px;
+    }
+
+    .hero h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      font-size: 1rem;
+      color: #475569;
+      margin-top: 4px;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+      padding: 24px;
+      transition: box-shadow 0.2s, transform 0.15s;
+      border: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    .card:hover {
+      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.06);
+      transform: translateY(-1px);
+    }
+
+    .card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card h3 i {
+      color: #3b82f6;
+    }
+
+    /* ── Grids ── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-bottom: 32px;
+    }
+
+    .metric-card {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(4px);
+      border-radius: 14px;
+      padding: 18px 20px;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.2s;
+    }
+
+    .metric-card:hover {
+      box-shadow: 0 2px 12px rgba(37, 99, 235, 0.06);
+      border-color: rgba(59, 130, 246, 0.2);
+    }
+
+    .metric-icon {
+      font-size: 1.4rem;
+      color: #3b82f6;
+      width: 40px;
+      text-align: center;
+    }
+
+    .metric-data {
+      flex: 1;
+    }
+
+    .metric-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      display: block;
+    }
+
+    .metric-value {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #0f172a;
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* ── Form ── */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #334155;
+      margin-bottom: 4px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #dbeafe;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      background: #f8fcff;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s, transform 0.1s;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-danger {
+      background: #dc2626;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s, transform 0.1s;
+      width: 100%;
+      justify-content: center;
+      margin-top: 15px;
+    }
+
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
+
+    /* ── Result card ── */
+    .result-card .placeholder {
+      text-align: center;
+      color: #94a3b8;
+      padding: 30px 0;
+    }
+
+    .result-card .placeholder i {
+      font-size: 2.4rem;
+      display: block;
+      margin-bottom: 8px;
+      color: #dbeafe;
+    }
+
+    .result-status {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 18px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .pill-green {
+      background: #dcfce7;
+      color: #16a34a;
+      border: 1px solid #bbf7d0;
+    }
+
+    .pill-red {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+
+    .confidence {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .result-message {
+      font-size: 0.95rem;
+      color: #334155;
+      padding: 8px 0 12px;
+    }
+
+    .result-disease {
+      background: #f0f7ff;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin: 8px 0;
+      border-left: 3px solid #3b82f6;
+    }
+
+    .result-meta {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      border-top: 1px solid #e9eef3;
+      padding-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* ── Disease Section ── */
+    .disease-section {
+      margin-bottom: 32px;
+    }
+
+    .disease-section h3,
+    .gauges h3,
+    .trends h3,
+    .history h3 {
+      color: #ffffff !important;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .disease-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+    }
+
+    .disease-card {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(4px);
+      border-radius: 12px;
+      padding: 16px 18px;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      text-align: center;
+    }
+
+    .disease-card h4 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 10px;
+    }
+
+    .risk-bar {
+      background: #e9eef3;
+      border-radius: 6px;
+      height: 6px;
+      overflow: hidden;
+    }
+
+    .risk-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.6s ease;
+      background: #22c55e;
+    }
+
+    .risk-label {
+      font-size: 0.65rem;
+      font-weight: 500;
+      display: block;
+      margin-top: 6px;
+      color: #94a3b8;
+    }
+
+    /* ── Gauges ── */
+    .gauges {
+      margin-bottom: 32px;
+    }
+
+    .gauge-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+      width: 100%;
+    }
+
+    .gauge-container {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(4px);
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      padding: 6px 4px 4px 4px;
+      width: 100%;
+      height: 180px;
+    }
+
+    .gauge-container .js-plotly-plot,
+    .gauge-container .plotly,
+    .gauge-container svg {
+      width: 100% !important;
+      max-width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* ── History ── */
+    .history {
+      margin-bottom: 24px;
+    }
+
+    .table-wrap {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(4px);
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      overflow-x: auto;
+      padding: 0 4px 4px 0;
+    }
+
+    .styled-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      min-width: 650px;
+    }
+
+    .styled-table th {
+      text-align: left;
+      padding: 14px 16px;
+      background: #f0f7ff;
+      font-weight: 600;
+      color: #475569;
+      border-bottom: 2px solid #dbeafe;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .styled-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #eef5fa;
+      color: #1e293b;
+    }
+
+    .val-good {
+      color: #16a34a;
+      font-weight: 600;
+    }
+
+    .val-crit {
+      color: #dc2626;
+      font-weight: 600;
+    }
+
+    /* ── Trends ── */
+    .trends {
+      margin-bottom: 24px;
+    }
+
+    .trend-chart {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(4px);
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      padding: 8px;
+    }
+
+    .footer {
+      margin-top: 40px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(148, 163, 184, 0.2);
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+
+    /* Notification Toaster */
+    #ui-message {
+      display: none;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .msg-error {
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+
+    .msg-success {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+
+    @media (max-width: 1024px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .metrics {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .gauge-row {
+        grid-template-columns: 1fr;
+      }
+
+      .disease-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="header">
+    <div class="header-left">
+      <span class="logo-icon">💧</span>
+      <span class="logo-text">AquaWatch</span>
+      <span class="logo-sub">Predictor</span>
+    </div>
+    <div class="header-right">
+      <button onclick="subscribePublicPush()" class="btn-primary" style="padding: 6px 14px; font-size: 0.8rem; width: auto; background: #0284c7;">
+        <i class="fas fa-bell"></i> Subscribe Public Alerts
+      </button>
+      <button onclick="openVerifyModal()" class="btn-primary" style="padding: 6px 14px; font-size: 0.8rem; width: auto; background: #16a34a;">
+        <i class="fas fa-sms"></i> Get SMS Alerts
+      </button>
+      <a href="https://ntfy.sh/aquawatch_nagaon_ews" target="_blank" style="font-size: 0.8rem; color: #2563eb; font-weight: 600; text-decoration: none;">
+        <i class="fas fa-mobile-screen"></i> Mobile Feed
+      </a>
+      <span class="status-badge" id="live-indicator"><span class="dot"></span> Live Link Active</span>
+      <span class="datetime" id="datetime"></span>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="hero">
+      <h1>Water Quality & Disease Predictor</h1>
+      <p>Real-time IoT telemetry and Random Forest AI risk analysis.</p>
+    </section>
+
+    <div id="ui-message"></div>
+
+    <div class="grid-2">
+      <!-- FORM (WHAT-IF SIMULATOR) -->
+      <div class="card form-card">
+        <h3><i class="fas fa-sliders-h"></i> What-If Simulator</h3>
+        <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 15px;">Override live sensors to test the AI model.
+        </p>
+        <form id="predict-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Temperature (°C)</label>
+              <input type="number" id="input-temp" step="0.1" value="25.0">
+            </div>
+            <div class="form-group">
+              <label>pH</label>
+              <input type="number" id="input-ph" step="0.1" value="7.0">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Turbidity (NTU)</label>
+              <input type="number" id="input-turb" step="0.1" value="5.0">
+            </div>
+            <div class="form-group">
+              <label>Dissolved O₂ (mg/L)</label>
+              <input type="number" id="input-do" step="0.1" value="6.5">
+            </div>
+          </div>
+          <button type="submit" class="btn-primary"><i class="fas fa-robot"></i> Run Simulation</button>
+        </form>
+      </div>
+
+      <div class="card result-card" id="result-card">
+        <h3><i class="fas fa-brain"></i> AI Assessment</h3>
+        <div id="prediction-result">
+          <div class="placeholder">
+            <i class="fas fa-satellite-dish"></i>
+            <p>Waiting for live sensor data...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- METRIC CARDS -->
+    <section class="metrics">
+      <div class="metric-card">
+        <div class="metric-icon"><i class="fas fa-thermometer-half"></i></div>
+        <div class="metric-data">
+          <span class="metric-label">Temperature</span>
+          <span class="metric-value" id="temp-val">-- °C</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon"><i class="fas fa-flask"></i></div>
+        <div class="metric-data">
+          <span class="metric-label">pH</span>
+          <span class="metric-value" id="ph-val">--</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon"><i class="fas fa-water"></i></div>
+        <div class="metric-data">
+          <span class="metric-label">Turbidity</span>
+          <span class="metric-value" id="turb-val">-- NTU</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon"><i class="fas fa-wind"></i></div>
+        <div class="metric-data">
+          <span class="metric-label">Dissolved O₂</span>
+          <span class="metric-value" id="do-val">-- mg/L</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="gauges">
+      <h3><i class="fas fa-chart-simple"></i> Parameter Gauges</h3>
+      <div class="gauge-row">
+        <div id="gauge-ph" class="gauge-container"></div>
+        <div id="gauge-turb" class="gauge-container"></div>
+        <div id="gauge-temp" class="gauge-container"></div>
+      </div>
+    </section>
+
+    <section class="disease-section">
+      <h3><i class="fas fa-virus"></i> Disease Risk Analysis</h3>
+      <div class="disease-grid" id="disease-grid">
+        <div class="disease-card" data-disease="Cholera">
+          <h4>Cholera</h4>
+          <div class="risk-bar">
+            <div class="risk-fill" style="width:0%"></div>
+          </div>
+          <span class="risk-label">No data</span>
+        </div>
+        <div class="disease-card" data-disease="Typhoid">
+          <h4>Typhoid</h4>
+          <div class="risk-bar">
+            <div class="risk-fill" style="width:0%"></div>
+          </div>
+          <span class="risk-label">No data</span>
+        </div>
+        <div class="disease-card" data-disease="Dysentery">
+          <h4>Dysentery</h4>
+          <div class="risk-bar">
+            <div class="risk-fill" style="width:0%"></div>
+          </div>
+          <span class="risk-label">No data</span>
+        </div>
+        <div class="disease-card" data-disease="Gastroenteritis">
+          <h4>Gastroenteritis</h4>
+          <div class="risk-bar">
+            <div class="risk-fill" style="width:0%"></div>
+          </div>
+          <span class="risk-label">No data</span>
+        </div>
+        <div class="disease-card" data-disease="Hepatitis A">
+          <h4>Hepatitis A</h4>
+          <div class="risk-bar">
+            <div class="risk-fill" style="width:0%"></div>
+          </div>
+          <span class="risk-label">No data</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="history">
+      <h3><i class="fas fa-clock-rotate-left"></i> Real-Time Telemetry Log</h3>
+      <div class="table-wrap">
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Temp (°C)</th>
+              <th>pH</th>
+              <th>Turbidity (NTU)</th>
+              <th>DO (mg/L)</th>
+              <th>AI Risk Status</th>
+              <th>Top Risk</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="trends">
+      <h3><i class="fas fa-chart-line"></i> Parameter Trends</h3>
+      <div class="trend-chart" id="trend-chart"></div>
+    </section>
+
+    <footer class="footer">
+      <span>AquaWatch Predictor &bull; Powered by FastAPI & Random Forest</span>
+      <span>v3.0.0</span>
+    </footer>
+
+
+    <!-- Admin Controls -->
+    <div style="text-align: center; margin: 40px 0 20px;">
+      <button onclick="toggleAdminPanel()" class="btn-primary" style="background: #475569;">
+        <i class="fas fa-list-check"></i> Toggle Alert Log & Contacts
+      </button>
+    </div>
+
+    <!-- Hidden Admin Panel -->
+    <section id="admin-panel" class="grid-2" style="display: none;">
+
+      <!-- Recipient Manager -->
+      <div class="card">
+        <h3><i class="fas fa-users"></i> Manage Alert Recipients</h3>
+        <form id="add-sub-form" style="display: flex; gap: 8px; margin-bottom: 15px;">
+          <input type="text" id="sub-name" placeholder="Name" required
+            style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
+          <input type="text" id="sub-role" placeholder="Role (e.g. Doctor)" required
+            style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
+          <input type="text" id="sub-phone" placeholder="+91..." required
+            style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
+          <button type="submit" class="btn-primary" style="padding: 8px 16px; width: auto;"><i
+              class="fas fa-plus"></i></button>
+        </form>
+        <div class="table-wrap" style="max-height: 250px; overflow-y: auto;">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Phone</th>
+                <th>Remove</th>
+              </tr>
+            </thead>
+            <tbody id="subscribers-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Alert Audit Log -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h3 style="margin: 0;"><i class="fas fa-tower-broadcast"></i> Dispatch Audit Log</h3>
+          <button onclick="fetchAdminData()" class="btn-primary"
+            style="padding: 4px 10px; font-size: 0.75rem; width: auto;"><i class="fas fa-sync"></i> Refresh</button>
+        </div>
+        <div class="table-wrap" style="max-height: 250px; overflow-y: auto;">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Recipient</th>
+                <th>Channel</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="logs-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ── DOM refs ──
+    const els = {
+      temp: document.getElementById('temp-val'),
+      ph: document.getElementById('ph-val'),
+      turb: document.getElementById('turb-val'),
+      do: document.getElementById('do-val'),
+      tableBody: document.getElementById('table-body'),
+      result: document.getElementById('prediction-result'),
+      datetime: document.getElementById('datetime'),
+      diseaseGrid: document.getElementById('disease-grid'),
+      msg: document.getElementById('ui-message')
+    };
+
+    function showMessage(text, isError = true) {
+      els.msg.textContent = text;
+      els.msg.className = isError ? 'msg-error' : 'msg-success';
+      els.msg.style.display = 'block';
+      setTimeout(() => els.msg.style.display = 'none', 5000);
+    }
+
+    // ── Update clock ──
+    function updateClock() {
+      const now = new Date();
+      els.datetime.textContent = now.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    updateClock();
+    setInterval(updateClock, 60000);
+
+    // ── Disease risk calculation (Heuristics) ──
+    function calculateDiseaseRisks(temp, ph, turb, do2) {
+      const risks = {};
+      risks.Cholera = Math.min(100, (Math.max(0, (turb - 5) * 4) + Math.max(0, (8 - do2) * 10)));
+      risks.Typhoid = Math.min(100, (Math.max(0, (turb - 8) * 5) + Math.max(0, (7 - do2) * 5)));
+      const phDeviation = Math.max(0, Math.abs(ph - 7.0) - 0.5) * 10;
+      risks.Dysentery = Math.min(100, (Math.max(0, (turb - 5) * 3) + phDeviation));
+      risks.Gastroenteritis = Math.min(100, (Math.max(0, (temp - 28) * 5) + Math.max(0, (turb - 5) * 3)));
+      risks['Hepatitis A'] = Math.min(100, (Math.max(0, (turb - 5) * 3) + Math.max(0, (7 - do2) * 8)));
+
+      Object.keys(risks).forEach(key => { risks[key] = Math.min(100, Math.round(risks[key])); });
+      return risks;
+    }
+
+    function updateDiseaseRisks(risks) {
+      const cards = els.diseaseGrid.querySelectorAll('.disease-card');
+      cards.forEach(card => {
+        const disease = card.dataset.disease;
+        const risk = risks[disease] || 0;
+        const fill = card.querySelector('.risk-fill');
+        const label = card.querySelector('.risk-label');
+        fill.style.width = risk + '%';
+        if (risk >= 70) {
+          fill.style.background = '#dc2626'; label.textContent = 'High Risk'; label.style.color = '#dc2626';
+        } else if (risk >= 40) {
+          fill.style.background = '#eab308'; label.textContent = 'Moderate Risk'; label.style.color = '#eab308';
+        } else {
+          fill.style.background = '#22c55e'; label.textContent = 'Low Risk'; label.style.color = '#22c55e';
+        }
+      });
+    }
+
+    // ── Gauges ──
+    function createGauge(containerId, value, vmin, vmax, label, unit, warn, crit, colorGood) {
+      let barColor = '#EF4444';
+      if (value < crit && value >= warn) barColor = '#EAB308';
+      else if (value < warn) barColor = colorGood || '#2563EB';
+
+      const data = [{
+        type: 'indicator', mode: 'gauge+number', value: value,
+        number: { suffix: ` ${unit}`, font: { size: 14, color: '#1e293b', family: 'Inter' } },
+        gauge: {
+          axis: { range: [vmin, vmax], tickcolor: '#94a3b8', tickfont: { size: 8, color: '#64748b' } },
+          bar: { color: barColor, thickness: 0.2 }, bgcolor: 'rgba(255,255,255,0)', borderwidth: 0,
+          steps: [
+            { range: [vmin, warn], color: 'rgba(37,99,235,0.06)' },
+            { range: [warn, crit], color: 'rgba(234,179,8,0.08)' },
+            { range: [crit, vmax], color: 'rgba(239,68,68,0.08)' }
+          ],
+          threshold: { line: { color: '#EF4444', width: 2 }, thickness: 0.75, value: crit }
+        },
+        title: { text: label, font: { size: 10, color: '#475569', family: 'Inter' } },
+        domain: { x: [0, 1], y: [0, 1] }
+      }];
+
+      const layout = { paper_bgcolor: 'rgba(255,255,255,0)', plot_bgcolor: 'rgba(255,255,255,0)', margin: { t: 30, b: 10, l: 15, r: 15 }, height: 160, width: null, font: { color: '#1e293b' }, autosize: true };
+      Plotly.newPlot(containerId, data, layout, { displayModeBar: false, responsive: true });
+      return data[0];
+    }
+
+    function updateGauge(containerId, data, value) {
+      const newData = [{
+        ...data, value: value,
+        gauge: {
+          ...data.gauge,
+          bar: { ...data.gauge.bar, color: value >= data.gauge.threshold.value ? '#EF4444' : value >= data.gauge.steps[1].range[0] ? '#EAB308' : '#2563EB' }
+        }
+      }];
+      Plotly.react(containerId, newData, { paper_bgcolor: 'rgba(255,255,255,0)', plot_bgcolor: 'rgba(255,255,255,0)', margin: { t: 30, b: 10, l: 15, r: 15 }, height: 160, width: null, font: { color: '#1e293b' }, autosize: true }, { displayModeBar: false, responsive: true });
+    }
+
+    // ── UI Updaters ──
+    function updateDashboard(data) {
+      els.temp.textContent = data.temperature.toFixed(1) + ' °C';
+      els.ph.textContent = data.ph.toFixed(2);
+      els.turb.textContent = data.turbidity.toFixed(1) + ' NTU';
+      els.do.textContent = data.dissolved_o2.toFixed(1) + ' mg/L';
+      if (window.gaugeData) {
+        updateGauge('gauge-ph', window.gaugeData.ph, data.ph);
+        updateGauge('gauge-turb', window.gaugeData.turb, data.turbidity);
+        updateGauge('gauge-temp', window.gaugeData.temp, data.temperature);
+      }
+    }
+
+    function triggerSMS() {
+      // Mock SMS trigger for now
+      showMessage("SMS Alert Dispatched to ASHA workers in Nagaon!", false);
+    }
+
+    function showPrediction(status, risks, isSimulation = false) {
+      const isSafe = status.includes('Safe');
+      const pillClass = isSafe ? 'pill-green' : 'pill-red';
+      const icon = isSafe ? 'fa-circle-check' : 'fa-circle-exclamation';
+
+      let topDisease = 'None';
+      let topRisk = 0;
+      Object.keys(risks).forEach(key => {
+        if (risks[key] > topRisk) { topRisk = risks[key]; topDisease = key; }
+      });
+
+      let alertButton = '';
+      if (!isSafe) {
+        alertButton = `<button id="sms-alert-btn" class="btn-danger"><i class="fas fa-comment-sms"></i> Approve & Send SMS Alert</button>`;
+      }
+
+      els.result.innerHTML = `
+        <div class="result-status">
+          <span class="pill ${pillClass}"><i class="fas ${icon}"></i> ${status}</span>
+        </div>
+        <div class="result-message">${isSafe ? 'All parameters are within safe limits.' : 'Parameters indicate potential outbreak risk. Review recommended.'}</div>
+        ${topRisk > 30 ? `<div class="result-disease"><strong>Top Disease Risk:</strong> ${topDisease} (${topRisk}%)</div>` : ''}
+        <div class="result-meta">
+          <span>Random Forest AI</span>
+          <span>${isSimulation ? 'Simulation Mode' : 'Live IoT Mode'}</span>
+        </div>
+        ${alertButton}
+      `;
+
+      updateDiseaseRisks(risks);
+    }
+
+    // ── Live Fetching ──
+    async function fetchHistory() {
+      try {
+        const res = await fetch('/api/readings');
+        const json = await res.json();
+        if (json.status !== 'success') return;
+
+        const history = json.data;
+        const recent = history.slice(0, 10).reverse(); // latest at top
+
+        let rows = '';
+        recent.forEach(entry => {
+          const time = new Date(entry.recorded_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          const isSafe = entry.risk_status.includes('Safe');
+          const statusClass = isSafe ? 'val-good' : 'val-crit';
+          const mockDO = 6.5; // Backend doesn't store DO yet
+
+          const risks = calculateDiseaseRisks(entry.temperature, entry.ph, entry.turbidity, mockDO);
+          let topDisease = 'None';
+          let topRisk = 0;
+          Object.keys(risks).forEach(k => { if (risks[k] > topRisk) { topRisk = risks[k]; topDisease = k; } });
+          const diseaseDisplay = topRisk > 30 ? `${topDisease} (${topRisk}%)` : 'None';
+
+          rows += `<tr>
+            <td>${time}</td>
+            <td>${entry.temperature.toFixed(1)}</td>
+            <td>${entry.ph.toFixed(2)}</td>
+            <td>${entry.turbidity.toFixed(1)}</td>
+            <td>${mockDO.toFixed(1)}</td>
+            <td class="${statusClass}">${entry.risk_status}</td>
+            <td>${diseaseDisplay}</td>
+          </tr>`;
+        });
+        els.tableBody.innerHTML = rows;
+
+        // Update Trend Chart
+        if (recent.length > 1) {
+          const dates = recent.map(h => new Date(h.recorded_at));
+          const trace1 = { x: dates, y: recent.map(h => h.temperature), mode: 'lines+markers', name: 'Temp', line: { color: '#2563EB' } };
+          const trace2 = { x: dates, y: recent.map(h => h.ph), mode: 'lines+markers', name: 'pH', line: { color: '#8b5cf6' }, yaxis: 'y2' };
+          const trace3 = { x: dates, y: recent.map(h => h.turbidity), mode: 'lines+markers', name: 'Turbidity', line: { color: '#f59e0b' }, yaxis: 'y3' };
+
+          const layout = {
+            paper_bgcolor: 'rgba(255,255,255,0)', plot_bgcolor: 'rgba(255,255,255,0)', margin: { l: 40, r: 20, t: 20, b: 30 }, height: 300,
+            grid: { rows: 3, columns: 1, pattern: 'independent' },
+            xaxis: { showticklabels: false }, yaxis: { title: 'Temp' }, yaxis2: { title: 'pH' }, yaxis3: { title: 'NTU' },
+            showlegend: false
+          };
+          Plotly.newPlot('trend-chart', [trace1, trace2, trace3], layout, { displayModeBar: false });
+        }
+      } catch (e) {
+        console.error('History fetch error', e);
+      }
+    }
+
+    async function fetchLive() {
+      try {
+        const res = await fetch('/api/latest');
+        const json = await res.json();
+        if (json.status === 'success') {
+          const data = json.data;
+          data.dissolved_o2 = 6.5; // Default for now
+          updateDashboard(data);
+          const risks = calculateDiseaseRisks(data.temperature, data.ph, data.turbidity, data.dissolved_o2);
+          showPrediction(data.risk_status, risks, false);
+          fetchHistory();
+        }
+      } catch (e) {
+        console.error("Live fetch error", e);
+      }
+    }
+
+    // ── Form submit (Simulator) ──
+    document.getElementById('predict-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const temp = parseFloat(document.getElementById('input-temp').value);
+      const ph = parseFloat(document.getElementById('input-ph').value);
+      const turb = parseFloat(document.getElementById('input-turb').value);
+      const do2 = parseFloat(document.getElementById('input-do').value);
+
+      if (isNaN(temp) || isNaN(ph) || isNaN(turb) || isNaN(do2)) {
+        showMessage('Please enter valid numbers'); return;
+      }
+
+      try {
+        const res = await fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ temperature: temp, ph: ph, turbidity: turb, dissolved_oxygen: do2 })
+        });
+        const data = await res.json();
+
+        updateDashboard(data.current);
+        const risks = calculateDiseaseRisks(temp, ph, turb, do2);
+        showPrediction(data.prediction.status, risks, true);
+
+        document.getElementById('live-indicator').innerHTML = '<span class="dot" style="background:#eab308"></span> Simulating...';
+        document.getElementById('live-indicator').style.color = '#eab308';
+
+        // Pause auto-polling temporarily
+        clearInterval(window.liveInterval);
+        setTimeout(() => {
+          document.getElementById('live-indicator').innerHTML = '<span class="dot"></span> Live Link Active';
+          document.getElementById('live-indicator').style.color = '#16a34a';
+          window.liveInterval = setInterval(fetchLive, 5000);
+        }, 15000);
+
+      } catch (err) {
+        showMessage('Error communicating with AI server.');
+      }
+    });
+
+    // ── Init ──
+    window.onload = function () {
+      // Initialize empty gauges
+      const gaugePH = createGauge('gauge-ph', 0, 0, 14, 'pH', '', 8.0, 9.0);
+      const gaugeTurb = createGauge('gauge-turb', 0, 0, 50, 'Turbidity (NTU)', 'NTU', 20, 30);
+      const gaugeTemp = createGauge('gauge-temp', 0, 10, 45, 'Temp (°C)', '°C', 32, 38);
+      window.gaugeData = { ph: gaugePH, turb: gaugeTurb, temp: gaugeTemp };
+
+      fetchLive();
+      window.liveInterval = setInterval(fetchLive, 5000);
+    };
+
+
+    // ── 1-Click Public Push Subscription ──
+    async function subscribePublicPush() {
+      if (!("Notification" in window)) {
+        alert("This browser does not support desktop notifications.");
+        return;
+      }
+      const perm = await Notification.requestPermission();
+      if (perm === "granted") {
+        new Notification("✅ AquaWatch Public Alerts Active", {
+          body: "This device is now subscribed to Nagaon District emergency water broadcasts.",
+          icon: "https://cdn-icons-png.flaticon.com/512/3105/3105807.png"
+        });
+        showMessage("Subscribed to Nagaon District Public Push Alerts!", false);
+      } else {
+        alert("Please allow notifications in your browser address bar.");
+      }
+    }
+
+    // ── Multi-Tier Broadcast Button (Public Push + Twilio) ──
+    document.addEventListener('click', async function (e) {
+      const btn = e.target.closest('#sms-alert-btn');
+      if (btn) {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Broadcasting to Public & Officials...';
+        btn.disabled = true;
+
+        try {
+          // 1. Fire Native OS Push Notification immediately on this screen
+          if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("🚨 AQUAWATCH EMERGENCY: NAGAON", {
+              body: "High contamination risk detected! Boil drinking water immediately and avoid tube well #4.",
+              icon: "https://cdn-icons-png.flaticon.com/512/564/564619.png",
+              requireInteraction: true
+            });
+          }
+
+          // 2. Call Backend to broadcast to Mobile Public Channel (ntfy) + Twilio SMS/WhatsApp
+          const res = await fetch('/api/send-sms', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ district: 'Nagaon' })
+          });
+          const data = await res.json();
+
+          if (res.ok) {
+            btn.innerHTML = `<i class="fas fa-check-double"></i> Broadcast Sent (Public + ${data.total_recipients} Officials)`;
+            btn.style.background = '#16a34a';
+
+            showMessage("🚨 Mass Public Push & Official SMS/WhatsApp Dispatched!", false);
+            if (document.getElementById('admin-panel').style.display !== 'none') {
+              fetchAdminData();
+            }
+          } else {
+            throw new Error(data.message || 'Broadcast failed');
+          }
+        } catch (err) {
+          alert('Broadcast Error: ' + err.message);
+          btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Retry Broadcast';
+          btn.disabled = false;
+        }
+      }
+    });
+
+
+
+
+    // ── Admin Panel Logic ──
+    function toggleAdminPanel() {
+      const panel = document.getElementById('admin-panel');
+      if (panel.style.display === 'none') {
+        panel.style.display = 'grid';
+        fetchAdminData();
+      } else {
+        panel.style.display = 'none';
+      }
+    }
+
+    async function fetchAdminData() {
+      // Fetch Subscribers
+      const subRes = await fetch('/api/subscribers?district=Nagaon');
+      const subJson = await subRes.json();
+      let subRows = '';
+      subJson.data.forEach(sub => {
+        subRows += `<tr>
+                <td>${sub.name}</td><td>${sub.role}</td><td>${sub.phone}</td>
+                <td><button onclick="deleteSubscriber(${sub.id})" style="color:#dc2626; background:none; border:none; cursor:pointer;"><i class="fas fa-trash"></i></button></td>
+            </tr>`;
+      });
+      document.getElementById('subscribers-body').innerHTML = subRows;
+
+      // Fetch Logs
+      const logRes = await fetch('/api/alert-logs');
+      const logJson = await logRes.json();
+      let logRows = '';
+      logJson.data.forEach(log => {
+        const time = new Date(log.sent_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        let statusColor = log.status.includes('Delivered') ? '#16a34a' : (log.status.includes('Failed') ? '#dc2626' : '#eab308');
+        logRows += `<tr>
+                <td>${time}</td><td>${log.subscriber_name}</td><td>${log.channel}</td>
+                <td style="color: ${statusColor}; font-weight: 600;">${log.status}</td>
+            </tr>`;
+      });
+      document.getElementById('logs-body').innerHTML = logRows;
+    }
+
+    // Add New Subscriber
+    document.getElementById('add-sub-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const phoneInput = document.getElementById('sub-phone').value;
+      const waInput = phoneInput.includes('whatsapp:') ? phoneInput : `whatsapp:${phoneInput}`;
+
+      const payload = {
+        name: document.getElementById('sub-name').value,
+        role: document.getElementById('sub-role').value,
+        phone: phoneInput,
+        whatsapp_number: waInput,
+        district: 'Nagaon'
+      };
+
+      await fetch('/api/subscribers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      document.getElementById('add-sub-form').reset();
+      fetchAdminData();
+    });
+
+    // Delete Subscriber
+    async function deleteSubscriber(id) {
+      if (confirm("Remove this contact from the alert broadcast list?")) {
+        await fetch(`/api/subscribers/${id}`, { method: 'DELETE' });
+        fetchAdminData();
+      }
+    }
+
+    // ---- Self-service phone verification ----
+    function openVerifyModal() {
+      document.getElementById('verify-modal').style.display = 'flex';
+      document.getElementById('vf-step1').style.display = 'block';
+      document.getElementById('vf-step2').style.display = 'none';
+      document.getElementById('vf-msg').textContent = '';
+    }
+    function closeVerifyModal() { document.getElementById('verify-modal').style.display = 'none'; }
+
+    async function startVerify() {
+      const phone = document.getElementById('vf-phone').value.trim();
+      const name = document.getElementById('vf-name').value.trim() || 'Guest';
+      const msg = document.getElementById('vf-msg');
+      if (!/^\+\d{10,15}$/.test(phone)) { msg.style.color = '#dc2626'; msg.textContent = 'Use international format, e.g. +919876543210'; return; }
+      msg.style.color = '#334155'; msg.textContent = 'Requesting verification call...';
+      try {
+        const res = await fetch('/api/verify/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone, name }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Verification failed');
+        document.getElementById('vf-code').textContent = data.validation_code;
+        document.getElementById('vf-step1').style.display = 'none';
+        document.getElementById('vf-step2').style.display = 'block';
+        msg.textContent = '';
+      } catch (e) { msg.style.color = '#dc2626'; msg.textContent = e.message; }
+    }
+
+    async function confirmVerify() {
+      const phone = document.getElementById('vf-phone').value.trim();
+      const name = document.getElementById('vf-name').value.trim() || 'Guest';
+      const msg = document.getElementById('vf-msg');
+      try {
+        const res = await fetch('/api/verify/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone, name }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Subscribe failed');
+        msg.style.color = '#16a34a'; msg.textContent = '✅ ' + data.message;
+        document.getElementById('vf-step2').style.display = 'none';
+        if (typeof fetchAdminData === 'function') fetchAdminData();
+      } catch (e) { msg.style.color = '#dc2626'; msg.textContent = e.message; }
+    }
+  </script>
+
+  <div id="verify-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,.6); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:16px; padding:28px; width:380px; max-width:92vw; box-shadow:0 20px 50px rgba(0,0,0,.3);">
+      <h3 style="margin:0 0 6px;">📱 Get Emergency SMS Alerts</h3>
+      <p style="font-size:.85rem; color:#64748b; margin:0 0 14px;">Enter your number. You'll get a verification call, then you're subscribed.</p>
+      <div id="vf-step1">
+        <input id="vf-name" placeholder="Your name" style="width:100%; padding:10px; margin-bottom:8px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;">
+        <input id="vf-phone" placeholder="+919876543210" style="width:100%; padding:10px; margin-bottom:12px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;">
+        <button onclick="startVerify()" class="btn-primary" style="width:100%;">Call me to verify</button>
+      </div>
+      <div id="vf-step2" style="display:none; text-align:center;">
+        <p style="margin:0 0 6px;">Answer the call and enter this code on your keypad:</p>
+        <div id="vf-code" style="font-size:2rem; font-weight:800; letter-spacing:6px; color:#0284c7; margin-bottom:12px;"></div>
+        <button onclick="confirmVerify()" class="btn-primary" style="width:100%;">I've verified — Subscribe me</button>
+      </div>
+      <div id="vf-msg" style="margin-top:12px; font-size:.85rem;"></div>
+      <button onclick="closeVerifyModal()" style="margin-top:10px; background:none; border:none; color:#64748b; cursor:pointer;">Close</button>
+    </div>
+  </div>
+</body>
+
+</html>
