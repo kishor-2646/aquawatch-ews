@@ -4,3 +4,4 @@ __pycache__/
 .idea/
 *.pyc
 ews_readings.db
+firmware/aquawatch_esp32/

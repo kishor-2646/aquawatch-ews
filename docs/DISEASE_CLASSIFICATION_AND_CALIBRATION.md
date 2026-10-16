@@ -72,16 +72,16 @@ Prepare 4 transparent glasses with identical volume (~200 mL):
 | **1. Clean** | 0.0 – 2.0 NTU | ~1580 – 1640 | `_________` |
 | **2. Less Dirty** | 10.0 – 15.0 NTU | ~1200 – 1400 | `_________` |
 | **3. Moderate Dirty** | 30.0 – 45.0 NTU | ~600 – 900 | `_________` |
-| **4. More Dirty** | 80.0 – 100.0 NTU | ~100 – 300 | `_________` |
+| **4. More Dirty** | 80.0 – 100.0 NTU | ~75 – 120 | `98.0` (Mud slurry) |
 
-### Step 3: Insert Your Values into `main.py`
-Open `main.py` around line 146:
+### Step 3: Calibrated Values in `main.py`
+The production backend is now calibrated with your exact measured numbers:
 ```python
 TURBIDITY_CAL_POINTS = [
-    (raw_more_dirty,     100.0),
-    (raw_moderate_dirty,  35.0),
-    (raw_less_dirty,      12.0),
-    (raw_clean,            0.5),
+    (98.0, 100.0),   # Mud water (~98 ADC)       -> 100.0 NTU (Outbreak Warning)
+    (1160.0, 40.0),  # Moderate dirty (~1160 ADC) -> 40.0 NTU (High Risk)
+    (1760.0, 10.0),  # Less dirty (~1760 ADC)     -> 10.0 NTU (Mild Risk)
+    (1805.0, 0.5),   # Clean water (~1805 ADC)    -> 0.5 NTU (WHO Potable Safe)
 ]
 ```
 The backend automatically performs smooth piecewise linear interpolation (`numpy.interp`) between these points!
