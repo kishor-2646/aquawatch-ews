@@ -285,8 +285,21 @@ async def receive_sensor_data(data: RawSensorData):
     cal_temp = calibrate_temperature(data.temperature_c)
     recorded_at = datetime.now(timezone.utc)
 
+    # ── Air-detection guard ──────────────────────────────────────────────
+    # When the probes are NOT submerged the turbidity sensor reads ~1500-1600
+    # and the pH sensor drops to ~500-520.  This looks like moderately dirty
+    # water and would trigger a false "High Risk" from the ML model.
+    # Detect the air signature and label the reading accordingly.
+    TURB_AIR_LO, TURB_AIR_HI = 1350, 1680   # raw ADC band for air
+    PH_AIR_CEILING              = 560        # pH raw in air is ~510
+    sensor_in_air = (TURB_AIR_LO <= data.turbidity_raw <= TURB_AIR_HI
+                     and data.ph_raw < PH_AIR_CEILING)
+
     risk_status = "Unknown"
-    if ml_model and scaler:
+    if sensor_in_air:
+        risk_status = "Sensor Not Submerged"
+        print(f"\n[IoT] Air detected (turb_raw={data.turbidity_raw}, ph_raw={data.ph_raw}) → skipping ML")
+    elif ml_model and scaler:
         try:
             ph_for_model = cal_ph if USE_MEASURED_PH_IN_MODEL else NOMINAL_PH
             features = np.array([[ph_for_model, cal_turbidity, cal_temp, 15.0]])

@@ -192,7 +192,7 @@
 
     .metrics {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 18px;
       margin-bottom: 32px;
     }
@@ -365,6 +365,12 @@
       background: #fef2f2;
       color: #dc2626;
       border: 1px solid #fecaca;
+    }
+
+    .pill-amber {
+      background: #fffbeb;
+      color: #d97706;
+      border: 1px solid #fde68a;
     }
 
     .confidence {
@@ -684,6 +690,9 @@
       <span class="logo-sub">Predictor</span>
     </div>
     <div class="header-right">
+      <button onclick="openInfoModal()" class="btn-primary" style="padding: 6px 14px; font-size: 0.8rem; width: auto; background: #7c3aed;">
+        <i class="fas fa-book-open"></i> How We Classify
+      </button>
       <button onclick="subscribePublicPush()" class="btn-primary" style="padding: 6px 14px; font-size: 0.8rem; width: auto; background: #0284c7;">
         <i class="fas fa-bell"></i> Subscribe Public Alerts
       </button>
@@ -757,10 +766,6 @@
               <label>Turbidity (NTU)</label>
               <input type="number" id="input-turb" step="0.1" value="5.0">
             </div>
-            <div class="form-group">
-              <label>Dissolved O₂ (mg/L)</label>
-              <input type="number" id="input-do" step="0.1" value="6.5">
-            </div>
           </div>
           <button type="submit" class="btn-primary"><i class="fas fa-robot"></i> Run Simulation</button>
         </form>
@@ -798,13 +803,6 @@
         <div class="metric-data">
           <span class="metric-label">Turbidity</span>
           <span class="metric-value" id="turb-val">-- NTU</span>
-        </div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-icon"><i class="fas fa-wind"></i></div>
-        <div class="metric-data">
-          <span class="metric-label">Dissolved O₂</span>
-          <span class="metric-value" id="do-val">N/A</span>
         </div>
       </div>
     </section>
@@ -869,7 +867,6 @@
               <th>Temp (°C)</th>
               <th>pH</th>
               <th>Turbidity (NTU)</th>
-              <th>DO</th>
               <th>AI Risk Status</th>
               <th>Top Risk</th>
             </tr>
@@ -1025,7 +1022,6 @@
       temp: document.getElementById('temp-val'),
       ph: document.getElementById('ph-val'),
       turb: document.getElementById('turb-val'),
-      do: document.getElementById('do-val'),
       tableBody: document.getElementById('table-body'),
       result: document.getElementById('prediction-result'),
       datetime: document.getElementById('datetime'),
@@ -1159,7 +1155,6 @@
       els.temp.textContent = data.temperature.toFixed(1) + ' °C';
       els.ph.textContent = data.ph.toFixed(2);
       els.turb.textContent = data.turbidity.toFixed(1) + ' NTU';
-      els.do.textContent = 'N/A (no sensor)';
       if (window.gaugeData) {
         updateGauge('gauge-ph', window.gaugeData.ph, data.ph);
         updateGauge('gauge-turb', window.gaugeData.turb, data.turbidity);
@@ -1174,26 +1169,32 @@
 
     function showPrediction(status, risks, isSimulation = false) {
       const isSafe = status.includes('Safe');
-      const pillClass = isSafe ? 'pill-green' : 'pill-red';
-      const icon = isSafe ? 'fa-circle-check' : 'fa-circle-exclamation';
+      const isAir  = status.includes('Not Submerged');
+      const pillClass = isAir ? 'pill-amber' : isSafe ? 'pill-green' : 'pill-red';
+      const icon = isAir ? 'fa-plug-circle-exclamation' : isSafe ? 'fa-circle-check' : 'fa-circle-exclamation';
 
       let topDisease = 'None';
       let topRisk = 0;
-      Object.keys(risks).forEach(key => {
-        if (risks[key] > topRisk) { topRisk = risks[key]; topDisease = key; }
-      });
+      if (!isAir) {
+        Object.keys(risks).forEach(key => {
+          if (risks[key] > topRisk) { topRisk = risks[key]; topDisease = key; }
+        });
+      }
 
       let alertButton = '';
-      if (!isSafe) {
+      if (!isSafe && !isAir) {
         alertButton = `<button id="sms-alert-btn" class="btn-danger"><i class="fas fa-comment-sms"></i> Approve & Send SMS Alert</button>`;
       }
+
+      const statusMsg = isAir ? 'Sensors are in air, not submerged in water. Dip probes into the water sample to get a valid reading.'
+        : isSafe ? 'All parameters are within safe limits.' : 'Parameters indicate potential outbreak risk. Review recommended.';
 
       els.result.innerHTML = `
         <div class="result-status">
           <span class="pill ${pillClass}"><i class="fas ${icon}"></i> ${status}</span>
         </div>
-        <div class="result-message">${isSafe ? 'All parameters are within safe limits.' : 'Parameters indicate potential outbreak risk. Review recommended.'}</div>
-        ${topRisk > 30 ? `<div class="result-disease"><strong>Top Disease Risk:</strong> ${topDisease} (${topRisk}%)</div>` : ''}
+        <div class="result-message">${statusMsg}</div>
+        ${!isAir && topRisk > 30 ? `<div class="result-disease"><strong>Top Disease Risk:</strong> ${topDisease} (${topRisk}%)</div>` : ''}
         <div class="result-meta">
           <span>Random Forest AI</span>
           <span>${isSimulation ? 'Simulation Mode' : 'Live IoT Mode'}</span>
@@ -1219,21 +1220,20 @@
         tableRows.forEach(entry => {
           const time = window.parseUTC(entry.recorded_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           const isSafe = entry.risk_status.includes('Safe');
-          const statusClass = isSafe ? 'val-good' : 'val-crit';
-          const mockDO = 6.5; // Backend doesn't store DO yet
+          const isAir  = entry.risk_status.includes('Not Submerged');
+          const statusClass = isAir ? '' : isSafe ? 'val-good' : 'val-crit';
 
-          const risks = calculateDiseaseRisks(entry.temperature, entry.ph, entry.turbidity, mockDO);
+          const risks = calculateDiseaseRisks(entry.temperature, entry.ph, entry.turbidity, 0);
           let topDisease = 'None';
           let topRisk = 0;
-          Object.keys(risks).forEach(k => { if (risks[k] > topRisk) { topRisk = risks[k]; topDisease = k; } });
-          const diseaseDisplay = topRisk > 30 ? `${topDisease} (${topRisk}%)` : 'None';
+          if (!isAir) { Object.keys(risks).forEach(k => { if (risks[k] > topRisk) { topRisk = risks[k]; topDisease = k; } }); }
+          const diseaseDisplay = isAir ? '—' : topRisk > 30 ? `${topDisease} (${topRisk}%)` : 'None';
 
           rows += `<tr>
             <td>${time}</td>
             <td>${entry.temperature.toFixed(1)}</td>
             <td>${entry.ph.toFixed(2)}</td>
             <td>${entry.turbidity.toFixed(1)}</td>
-            <td>N/A</td>
             <td class="${statusClass}">${entry.risk_status}</td>
             <td>${diseaseDisplay}</td>
           </tr>`;
@@ -1270,9 +1270,8 @@
         const json = await res.json();
         if (json.status === 'success') {
           const data = json.data;
-          data.dissolved_o2 = 6.5; // Default for now
           updateDashboard(data);
-          const risks = calculateDiseaseRisks(data.temperature, data.ph, data.turbidity, data.dissolved_o2);
+          const risks = calculateDiseaseRisks(data.temperature, data.ph, data.turbidity, 0);
           showPrediction(data.risk_status, risks, false);
           fetchHistory();
         }
@@ -1287,9 +1286,9 @@
       const temp = parseFloat(document.getElementById('input-temp').value);
       const ph = parseFloat(document.getElementById('input-ph').value);
       const turb = parseFloat(document.getElementById('input-turb').value);
-      const do2 = parseFloat(document.getElementById('input-do').value);
+      const do2 = 6.5;
 
-      if (isNaN(temp) || isNaN(ph) || isNaN(turb) || isNaN(do2)) {
+      if (isNaN(temp) || isNaN(ph) || isNaN(turb)) {
         showMessage('Please enter valid numbers'); return;
       }
 
@@ -1509,7 +1508,77 @@
         if (typeof fetchAdminData === 'function') fetchAdminData();
       } catch (e) { msg.style.color = '#dc2626'; msg.textContent = e.message; }
     }
+    // ── Info modal ──
+    function openInfoModal() { document.getElementById('info-modal').style.display = 'flex'; }
+    function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
   </script>
+
+  <!-- HOW WE CLASSIFY MODAL -->
+  <div id="info-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,.65); z-index:9998; align-items:center; justify-content:center; overflow-y:auto;">
+    <div style="background:#fff; border-radius:18px; padding:32px 28px; width:720px; max-width:94vw; max-height:92vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,.35); margin:20px auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h2 style="margin:0; font-size:1.25rem;"><i class="fas fa-microscope" style="color:#7c3aed;"></i> How AquaWatch Classifies Water Risk</h2>
+        <button onclick="closeInfoModal()" style="background:none; border:none; font-size:1.3rem; cursor:pointer; color:#64748b;">&times;</button>
+      </div>
+
+      <h3 style="font-size:.95rem; color:#7c3aed; margin:16px 0 8px;"><i class="fas fa-microchip"></i> Step 1: Raw ADC → Calibrated Values</h3>
+      <p style="font-size:.85rem; color:#334155; margin-bottom:8px;">The ESP32 reads raw analog values (0–4095). These are converted to physical units on the server:</p>
+      <table class="stat-table" style="margin-bottom:16px;">
+        <thead><tr><th>Sensor</th><th>Raw ADC → Calibrated</th><th>Method</th></tr></thead>
+        <tbody>
+          <tr><td><b>Turbidity</b></td><td>4-point piecewise linear interpolation</td><td><code>numpy.interp(raw, [98, 1160, 1760, 1805], [100, 40, 10, 0.5])</code></td></tr>
+          <tr><td><b>pH</b></td><td>Linear from baseline</td><td><code>7.0 + (raw − 626) × 0.01</code>, clamped 0–14</td></tr>
+          <tr><td><b>Temperature</b></td><td>Factory-calibrated DS18B20</td><td>Direct °C reading, rounded to 2 decimals</td></tr>
+        </tbody>
+      </table>
+      <div style="background:#f0f7ff; border-left:3px solid #3b82f6; padding:10px 14px; border-radius:6px; margin-bottom:14px; font-size:.82rem;">
+        <b>Turbidity calibration example:</b> The ESP32 sends <code>turbidity_raw = 1160</code>. Looking up in the table: 1160 ADC → <b>40.0 NTU</b> (moderately dirty water). At 1805 ADC → <b>0.5 NTU</b> (clean drinking water). Values between points are linearly interpolated.
+      </div>
+
+      <h3 style="font-size:.95rem; color:#7c3aed; margin:18px 0 8px;"><i class="fas fa-brain"></i> Step 2: ML Risk Classification (Tier 1)</h3>
+      <p style="font-size:.85rem; color:#334155; margin-bottom:8px;">A <b>Random Forest Classifier</b> (scikit-learn) takes 4 features and predicts <b>Safe</b> or <b>High Risk</b>:</p>
+      <table class="stat-table" style="margin-bottom:10px;">
+        <thead><tr><th>Feature</th><th>Source</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>pH</td><td>Fixed at 7.0</td><td>pH probe unreliable; uses nominal value</td></tr>
+          <tr><td>Turbidity (NTU)</td><td>Calibrated from ADC</td><td>Primary contamination indicator</td></tr>
+          <tr><td>Temperature (°C)</td><td>DS18B20</td><td>Pathogen growth amplifier</td></tr>
+          <tr><td>Dissolved O₂</td><td>Fixed at 15.0</td><td>No DO sensor installed</td></tr>
+        </tbody>
+      </table>
+      <div style="background:#fef2f2; border-left:3px solid #dc2626; padding:10px 14px; border-radius:6px; margin-bottom:14px; font-size:.82rem;">
+        <b>Example:</b> Turbidity = 40 NTU, Temp = 29 °C → features scaled → Random Forest predicts class <b>0</b> → <span style="color:#dc2626; font-weight:700;">High Risk – Outbreak Warning</span>.
+      </div>
+
+      <h3 style="font-size:.95rem; color:#7c3aed; margin:18px 0 8px;"><i class="fas fa-virus"></i> Step 3: Disease Vulnerability Index (Tier 2)</h3>
+      <p style="font-size:.85rem; color:#334155; margin-bottom:8px;">For each pathogen, a rule-based score (0–100) uses two environmental indices:</p>
+      <ul style="font-size:.82rem; color:#334155; margin:0 0 10px 18px;">
+        <li><b>TurbIndex</b>: 0 at ≤1 NTU → 1 at ≥50 NTU (piecewise linear)</li>
+        <li><b>TempIndex</b>: 0 at ≤20 °C → 1 at ≥32 °C (linear)</li>
+      </ul>
+      <table class="stat-table" style="margin-bottom:10px;">
+        <thead><tr><th>Disease</th><th>Pathogen</th><th>Formula</th><th>Temp Relation</th></tr></thead>
+        <tbody>
+          <tr><td><b>Cholera</b></td><td><i>V. cholerae</i></td><td><code>100 × TurbIdx × (0.5 + 0.5 × TempIdx)</code></td><td>Warm = more risk</td></tr>
+          <tr><td><b>Typhoid</b></td><td><i>Salmonella</i></td><td><code>100 × TurbIdx × (0.6 + 0.4 × TempIdx)</code></td><td>Warm = more risk</td></tr>
+          <tr><td><b>Dysentery</b></td><td><i>Shigella</i></td><td><code>100 × TurbIdx × (0.6 + 0.4 × TempIdx)</code></td><td>Warm = more risk</td></tr>
+          <tr><td><b>Gastroenteritis</b></td><td><i>E. coli</i></td><td><code>100 × TurbIdx × (0.5 + 0.5 × TempIdx)</code></td><td>Warm = more risk</td></tr>
+          <tr><td><b>Hepatitis A</b></td><td>HAV (virus)</td><td><code>100 × TurbIdx × (0.6 + 0.4 × (1−TempIdx))</code></td><td>Cool = more risk</td></tr>
+        </tbody>
+      </table>
+      <div style="background:#fffbeb; border-left:3px solid #d97706; padding:10px 14px; border-radius:6px; margin-bottom:14px; font-size:.82rem;">
+        <b>Example:</b> Turbidity 40 NTU → TurbIndex ≈ 0.72. Temperature 29 °C → TempIndex = 0.75.<br>
+        <b>Cholera:</b> 100 × 0.72 × (0.5 + 0.5 × 0.75) = <b>63%</b>. <b>Hepatitis A:</b> 100 × 0.72 × (0.6 + 0.4 × 0.25) = <b>50%</b> (cooler water favours virus survival).
+      </div>
+
+      <h3 style="font-size:.95rem; color:#7c3aed; margin:18px 0 8px;"><i class="fas fa-plug-circle-exclamation"></i> Air Detection</h3>
+      <p style="font-size:.85rem; color:#334155;">If the sensors are <b>not submerged</b> (turbidity raw 1350–1680 AND pH raw &lt; 560), the system labels the reading <span style="color:#d97706; font-weight:700;">"Sensor Not Submerged"</span> and skips the ML model to avoid false alarms.</p>
+
+      <div style="text-align:center; margin-top:18px;">
+        <button onclick="closeInfoModal()" class="btn-primary" style="width:auto; padding:10px 28px;">Close</button>
+      </div>
+    </div>
+  </div>
 
   <div id="verify-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,.6); z-index:9999; align-items:center; justify-content:center;">
     <div style="background:#fff; border-radius:16px; padding:28px; width:380px; max-width:92vw; box-shadow:0 20px 50px rgba(0,0,0,.3);">
