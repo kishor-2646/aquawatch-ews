@@ -591,6 +591,70 @@
       border: 1px solid #bbf7d0;
     }
 
+    /* ══ EXPO LAYER ══ */
+    .risk-banner { display:flex; align-items:center; gap:16px; padding:16px 22px; border-radius:14px; margin-bottom:24px; color:#fff; box-shadow:0 6px 24px rgba(0,0,0,.15); }
+    .risk-banner > i { font-size:1.9rem; }
+    .risk-banner .rb-text { flex:1; }
+    .risk-banner strong { display:block; font-size:1.05rem; }
+    .risk-banner span { font-size:.85rem; opacity:.92; }
+    .risk-banner button { background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.5); color:#fff; border-radius:10px; padding:8px 16px; font-weight:600; cursor:pointer; }
+    .risk-banner button:hover { background:rgba(255,255,255,.32); }
+    .risk-banner.safe { background:linear-gradient(90deg,#16a34a,#0d9488); }
+    .risk-banner.danger { background:linear-gradient(90deg,#dc2626,#9f1239); animation:bannerPulse 1.6s infinite; }
+    .risk-banner.stale { background:linear-gradient(90deg,#d97706,#b45309); }
+    .risk-banner.nodata { background:linear-gradient(90deg,#64748b,#475569); }
+    @keyframes bannerPulse { 0%,100% { box-shadow:0 0 0 0 rgba(220,38,38,.5); } 50% { box-shadow:0 0 0 12px rgba(220,38,38,0); } }
+
+    .overview { display:grid; grid-template-columns:repeat(6,1fr); gap:14px; margin-bottom:28px; }
+    .ov-tile { background:rgba(255,255,255,.88); backdrop-filter:blur(6px); border-radius:14px; padding:14px 16px; border:1px solid rgba(148,163,184,.15); transition:transform .15s, box-shadow .2s; }
+    .ov-tile:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(37,99,235,.10); }
+    .ov-tile .ov-label { font-size:.68rem; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.04em; display:flex; align-items:center; gap:6px; }
+    .ov-tile .ov-value { font-size:1.5rem; font-weight:700; color:#0f172a; margin-top:4px; line-height:1.2; }
+    .ov-tile .ov-sub { font-size:.72rem; color:#64748b; margin-top:2px; }
+
+    .status-pill { display:inline-flex; align-items:center; gap:6px; padding:3px 12px; border-radius:20px; font-size:.72rem; font-weight:700; color:#fff; }
+    .status-pill .dot2 { width:7px; height:7px; border-radius:50%; background:#fff; }
+    .status-pill.live .dot2 { animation:pulse 1.4s infinite; }
+    .node-card { border:1px solid #e2e8f0; border-radius:12px; padding:14px 16px; margin-bottom:12px; background:#fff; }
+    .node-head { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .node-title { font-weight:700; color:#0f172a; font-size:.95rem; }
+    .node-meta { font-size:.75rem; color:#64748b; margin:4px 0 8px; }
+    .sensor-row { display:flex; justify-content:space-between; font-size:.8rem; padding:5px 0; border-top:1px dashed #e2e8f0; }
+    .sensor-row .s-state { font-weight:600; }
+    #node-map { width:100%; height:330px; border-radius:12px; overflow:hidden; }
+
+    .stat-table { width:100%; border-collapse:collapse; font-size:.85rem; }
+    .stat-table th { text-align:left; font-size:.7rem; text-transform:uppercase; color:#64748b; padding:8px; border-bottom:2px solid #dbeafe; }
+    .stat-table td { padding:9px 8px; border-bottom:1px solid #eef5fa; }
+    .score-ring { width:120px; height:120px; border-radius:50%; margin:6px auto 10px; display:flex; align-items:center; justify-content:center; }
+    .score-ring div { width:90px; height:90px; border-radius:50%; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .score-ring b { font-size:1.7rem; color:#0f172a; line-height:1; }
+    .score-ring small { font-size:.65rem; color:#64748b; }
+    .advice-list { list-style:none; font-size:.88rem; }
+    .advice-list li { padding:7px 0 7px 26px; position:relative; border-bottom:1px solid #f1f5f9; }
+    .advice-list li::before { content:'\f058'; font-family:'Font Awesome 6 Free'; font-weight:900; position:absolute; left:0; color:#16a34a; }
+    .advice-list.bad li::before { content:'\f071'; color:#dc2626; }
+    .feed-item { display:flex; gap:10px; align-items:center; padding:8px 0; border-bottom:1px solid #f1f5f9; font-size:.82rem; }
+    .feed-item i { width:28px; height:28px; border-radius:50%; background:#eff6ff; color:#2563eb; display:flex; align-items:center; justify-content:center; font-size:.8rem; flex-shrink:0; }
+    .feed-item .f-main { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .feed-item .f-time { color:#94a3b8; font-size:.72rem; white-space:nowrap; }
+    .demo-btns { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:10px; }
+    .demo-btn { border:none; border-radius:10px; padding:12px 8px; color:#fff; font-weight:600; cursor:pointer; font-size:.82rem; transition:transform .1s, filter .15s; }
+    .demo-btn:hover { filter:brightness(1.08); }
+    .demo-btn:active { transform:scale(.97); }
+    .tool-btn { background:#f1f5f9; border:1px solid #cbd5e1; border-radius:10px; padding:9px 14px; font-weight:600; font-size:.8rem; cursor:pointer; color:#334155; margin:4px 6px 0 0; }
+    .tool-btn:hover { background:#e2e8f0; }
+    .pipeline { display:flex; align-items:stretch; gap:6px; flex-wrap:wrap; justify-content:center; }
+    .pipe-step { flex:1; min-width:130px; text-align:center; background:linear-gradient(180deg,#f8fbff,#eef5ff); border:1px solid #dbeafe; border-radius:12px; padding:14px 8px; }
+    .pipe-step i { font-size:1.5rem; color:#2563eb; margin-bottom:6px; }
+    .pipe-step b { display:block; font-size:.82rem; color:#0f172a; }
+    .pipe-step small { font-size:.7rem; color:#64748b; }
+    .pipe-arrow { align-self:center; color:#94a3b8; }
+    .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; justify-content:center; }
+    .chip { background:#eff6ff; color:#1d4ed8; border-radius:20px; padding:4px 12px; font-size:.72rem; font-weight:600; }
+    @media (max-width: 1100px) { .overview { grid-template-columns:repeat(3,1fr); } }
+    @media (max-width: 600px) { .overview { grid-template-columns:repeat(2,1fr); } .pipe-arrow { display:none; } .risk-banner { flex-wrap:wrap; } }
+
     @media (max-width: 1024px) {
       .grid-2 {
         grid-template-columns: 1fr;
@@ -641,6 +705,35 @@
     </section>
 
     <div id="ui-message"></div>
+
+    <!-- LIVE RISK BANNER -->
+    <div id="risk-banner" class="risk-banner nodata">
+      <i class="fas fa-satellite-dish"></i>
+      <div class="rb-text"><strong id="rb-title">Connecting to AquaWatch network...</strong><span id="rb-sub">Waiting for sensor data</span></div>
+      <button id="rb-action" style="display:none" onclick="document.getElementById('result-card').scrollIntoView({behavior:'smooth',block:'center'})"><i class="fas fa-bell"></i> Review &amp; Alert</button>
+    </div>
+
+    <!-- SYSTEM OVERVIEW -->
+    <section class="overview" id="overview">
+      <div class="ov-tile"><div class="ov-label"><i class="fas fa-microchip"></i> Nodes Online</div><div class="ov-value" id="ov-nodes">--</div><div class="ov-sub" id="ov-nodes-sub">&nbsp;</div></div>
+      <div class="ov-tile"><div class="ov-label"><i class="fas fa-clock"></i> Last Sync</div><div class="ov-value" id="ov-sync">--</div><div class="ov-sub" id="ov-sync-sub">&nbsp;</div></div>
+      <div class="ov-tile"><div class="ov-label"><i class="fas fa-database"></i> Readings (24h)</div><div class="ov-value" id="ov-count">--</div><div class="ov-sub">stored in cloud DB</div></div>
+      <div class="ov-tile"><div class="ov-label"><i class="fas fa-droplet"></i> Safety Score</div><div class="ov-value" id="ov-score">--</div><div class="ov-sub" id="ov-score-sub">&nbsp;</div></div>
+      <div class="ov-tile"><div class="ov-label"><i class="fas fa-paper-plane"></i> Alert Messages</div><div class="ov-value" id="ov-alerts">--</div><div class="ov-sub" id="ov-alerts-sub">&nbsp;</div></div>
+      <div class="ov-tile"><div class="ov-label"><i class="fas fa-cloud"></i> Cloud API</div><div class="ov-value" id="ov-api">--</div><div class="ov-sub" id="ov-api-sub">&nbsp;</div></div>
+    </section>
+
+    <!-- SENSOR NODES + MAP -->
+    <div class="grid-2">
+      <div class="card">
+        <h3><i class="fas fa-tower-cell"></i> Sensor Node Network</h3>
+        <div id="node-list"></div>
+      </div>
+      <div class="card">
+        <h3><i class="fas fa-location-dot"></i> Deployment Map &middot; Assam</h3>
+        <div id="node-map"></div>
+      </div>
+    </div>
 
     <div class="grid-2">
       <!-- FORM (WHAT-IF SIMULATOR) -->
@@ -791,9 +884,76 @@
       <div class="trend-chart" id="trend-chart"></div>
     </section>
 
+    <!-- ANALYTICS -->
+    <div class="grid-2">
+      <div class="card">
+        <h3><i class="fas fa-chart-area"></i> Turbidity vs WHO Limit</h3>
+        <div id="turb-who-chart" style="height:260px;"></div>
+        <div style="font-size:.72rem;color:#64748b;">Green = Low Risk &middot; Red = High Risk (Random Forest). Dashed line: WHO acceptable limit (5 NTU).</div>
+      </div>
+      <div class="card">
+        <h3><i class="fas fa-table-list"></i> Statistics <span id="stat-range" style="font-weight:400;font-size:.75rem;color:#64748b;"></span></h3>
+        <table class="stat-table">
+          <thead><tr><th>Parameter</th><th>Min</th><th>Avg</th><th>Max</th></tr></thead>
+          <tbody id="stat-body"></tbody>
+        </table>
+        <div style="margin-top:14px;">
+          <div class="score-ring" id="score-ring"><div><b id="score-num">--</b><small>SAFETY</small></div></div>
+          <div id="score-text" style="text-align:center;font-size:.82rem;color:#475569;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADVICE + ALERT FEED -->
+    <div class="grid-2">
+      <div class="card">
+        <h3><i class="fas fa-shield-heart"></i> <span id="advice-title">Public Health Advice</span></h3>
+        <ul class="advice-list" id="advice-list"></ul>
+      </div>
+      <div class="card">
+        <h3><i class="fas fa-bullhorn"></i> Live Alert Feed <span id="sub-count" style="font-weight:400;font-size:.75rem;color:#64748b;"></span></h3>
+        <div id="alert-feed"><div style="color:#94a3b8;font-size:.85rem;">No alerts dispatched yet.</div></div>
+      </div>
+    </div>
+
+    <!-- EXPO CONTROL PANEL -->
+    <div class="card" style="margin-bottom:32px;">
+      <h3><i class="fas fa-flask-vial"></i> Expo Demo Controls</h3>
+      <p style="font-size:.8rem;color:#64748b;margin-bottom:12px;">Inject a simulated ESP32 packet (raw ADC values) through the real pipeline: calibration &rarr; Random Forest &rarr; database &rarr; dashboard. Use this to demonstrate a risk event without a physical sample.</p>
+      <div class="demo-btns">
+        <button class="demo-btn" style="background:#16a34a" onclick="expoInject('clean')"><i class="fas fa-glass-water"></i> Clean Water</button>
+        <button class="demo-btn" style="background:#d97706" onclick="expoInject('moderate')"><i class="fas fa-triangle-exclamation"></i> Moderately Dirty</button>
+        <button class="demo-btn" style="background:#dc2626" onclick="expoInject('mud')"><i class="fas fa-skull-crossbones"></i> Heavy Mud (Outbreak)</button>
+      </div>
+      <button class="tool-btn" onclick="expoExport()"><i class="fas fa-file-csv"></i> Export Readings CSV</button>
+      <button class="tool-btn" onclick="expoFullscreen()"><i class="fas fa-expand"></i> Presentation Mode</button>
+      <button class="tool-btn" onclick="window.open('/docs','_blank')"><i class="fas fa-code"></i> API Docs</button>
+    </div>
+
+    <!-- HOW IT WORKS -->
+    <div class="card" style="margin-bottom:32px;">
+      <h3><i class="fas fa-diagram-project"></i> How AquaWatch Works</h3>
+      <div class="pipeline">
+        <div class="pipe-step"><i class="fas fa-vial"></i><b>1. Sense</b><small>Turbidity, pH, DS18B20 temperature</small></div>
+        <i class="fas fa-chevron-right pipe-arrow"></i>
+        <div class="pipe-step"><i class="fas fa-wifi"></i><b>2. Transmit</b><small>ESP32 &rarr; HTTPS JSON every ~10 s</small></div>
+        <i class="fas fa-chevron-right pipe-arrow"></i>
+        <div class="pipe-step"><i class="fas fa-sliders"></i><b>3. Calibrate</b><small>ADC &rarr; NTU, pH, &deg;C on server</small></div>
+        <i class="fas fa-chevron-right pipe-arrow"></i>
+        <div class="pipe-step"><i class="fas fa-brain"></i><b>4. Predict</b><small>Random Forest risk + disease index</small></div>
+        <i class="fas fa-chevron-right pipe-arrow"></i>
+        <div class="pipe-step"><i class="fas fa-user-check"></i><b>5. Approve</b><small>Admin confirms the alert</small></div>
+        <i class="fas fa-chevron-right pipe-arrow"></i>
+        <div class="pipe-step"><i class="fas fa-tower-broadcast"></i><b>6. Alert</b><small>Push + SMS + WhatsApp + audit log</small></div>
+      </div>
+      <div class="chips">
+        <span class="chip">ESP32</span><span class="chip">FastAPI</span><span class="chip">scikit-learn</span><span class="chip">SQLite</span><span class="chip">Twilio</span><span class="chip">ntfy.sh</span><span class="chip">OneSignal</span><span class="chip">Plotly.js</span><span class="chip">Render Cloud</span>
+      </div>
+    </div>
+
     <footer class="footer">
       <span>AquaWatch Predictor &bull; Powered by FastAPI & Random Forest</span>
-      <span>v3.0.0</span>
+      <span>v4.0.0</span>
     </footer>
 
 
@@ -1057,7 +1217,7 @@
 
         let rows = '';
         tableRows.forEach(entry => {
-          const time = new Date(entry.recorded_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          const time = window.parseUTC(entry.recorded_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           const isSafe = entry.risk_status.includes('Safe');
           const statusClass = isSafe ? 'val-good' : 'val-crit';
           const mockDO = 6.5; // Backend doesn't store DO yet
@@ -1082,7 +1242,7 @@
 
         // Update Trend Chart
         if (recent.length > 1) {
-          const dates = recent.map(h => new Date(h.recorded_at));
+          const dates = recent.map(h => window.parseUTC(h.recorded_at));
           const trace1 = { x: dates, y: recent.map(h => h.temperature), mode: 'lines+markers', name: 'Temp', line: { color: '#2563EB' } };
           const trace2 = { x: dates, y: recent.map(h => h.ph), mode: 'lines+markers', name: 'pH', line: { color: '#8b5cf6' }, yaxis: 'y2' };
           const trace3 = { x: dates, y: recent.map(h => h.turbidity), mode: 'lines+markers', name: 'Turbidity', line: { color: '#f59e0b' }, yaxis: 'y3' };
@@ -1268,7 +1428,7 @@
       const logJson = await logRes.json();
       let logRows = '';
       logJson.data.forEach(log => {
-        const time = new Date(log.sent_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        const time = window.parseUTC(log.sent_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
         let statusColor = log.status.includes('Delivered') ? '#16a34a' : (log.status.includes('Failed') ? '#dc2626' : '#eab308');
         logRows += `<tr>
                 <td>${time}</td><td>${log.subscriber_name}</td><td>${log.channel}</td>
@@ -1369,6 +1529,290 @@
       <button onclick="closeVerifyModal()" style="margin-top:10px; background:none; border:none; color:#64748b; cursor:pointer;">Close</button>
     </div>
   </div>
+  <script>
+    // ══════════ EXPO LAYER: node status, map, stats, alerts, demo controls ══════════
+    (function () {
+      // Backend stores naive UTC timestamps -> force UTC parsing
+      window.parseUTC = function (s) {
+        if (!s) return null;
+        if (typeof s === 'string' && !/[zZ]$|[+-]\d\d:?\d\d$/.test(s)) s = s.replace(' ', 'T') + 'Z';
+        return new Date(s);
+      };
+      const $ = id => document.getElementById(id);
+      const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      const ONLINE_MS = 60000, DELAY_MS = 300000;
+      const NODES = [
+        { id: 'AW-N01', name: 'Nagaon Node 01', district: 'Nagaon', lat: 26.35, lon: 92.68, hw: 'ESP32 \u00b7 Turbidity \u00b7 pH \u00b7 DS18B20' },
+        { id: 'AW-N02', name: 'Barpeta Node 02', district: 'Barpeta', lat: 26.32, lon: 91.00, hw: 'ESP32 \u00b7 Turbidity \u00b7 pH \u00b7 DS18B20' }
+      ];
+      let lastRows = [];
+      let lastLogs = [];
+
+      function ago(ms) {
+        const s = Math.floor(ms / 1000);
+        if (s < 5) return 'just now';
+        if (s < 60) return s + 's ago';
+        const m = Math.floor(s / 60);
+        if (m < 60) return m + ' min ago';
+        const h = Math.floor(m / 60);
+        if (h < 48) return h + ' h ago';
+        return Math.floor(h / 24) + ' d ago';
+      }
+
+      function nodeStatus(latest) {
+        if (!latest) return { k: 'none', label: 'Not Deployed', color: '#94a3b8' };
+        const age = Date.now() - latest.t.getTime();
+        if (age <= ONLINE_MS) return { k: 'online', label: 'Online', color: '#16a34a', live: true };
+        if (age <= DELAY_MS) return { k: 'delayed', label: 'Delayed', color: '#d97706' };
+        return { k: 'offline', label: 'Offline', color: '#dc2626' };
+      }
+
+      function sensorHealth(latest, st) {
+        const dead = st.k === 'none' || st.k === 'offline';
+        const g = '#94a3b8';
+        if (dead) return [['Turbidity sensor', 'GPIO34', 'No signal', g], ['pH sensor', 'GPIO35', 'No signal', g], ['DS18B20 temp', 'GPIO32', 'No signal', g]];
+        const tOk = latest.temperature > 0 && latest.temperature < 60;
+        return [
+          ['Turbidity sensor', 'GPIO34', 'OK \u00b7 ' + latest.turbidity.toFixed(1) + ' NTU', '#16a34a'],
+          ['pH sensor', 'GPIO35', 'Indicative only', '#d97706'],
+          ['DS18B20 temp', 'GPIO32', tOk ? 'OK \u00b7 ' + latest.temperature.toFixed(1) + ' \u00b0C' : 'Fault', tOk ? '#16a34a' : '#dc2626']
+        ];
+      }
+
+      function reportingInterval(rows) {
+        const diffs = [];
+        for (let i = 0; i < Math.min(rows.length - 1, 6); i++) {
+          const d = rows[i].t - rows[i + 1].t;
+          if (d > 0 && d < 600000) diffs.push(d);
+        }
+        if (!diffs.length) return null;
+        diffs.sort((a, b) => a - b);
+        return Math.round(diffs[Math.floor(diffs.length / 2)] / 1000);
+      }
+
+      function safetyScore(latest) {
+        const tIdx = turbidityIndex(latest.turbidity), kIdx = temperatureIndex(latest.temperature);
+        return Math.round(100 * (1 - (0.8 * tIdx + 0.2 * kIdx * tIdx)));
+      }
+
+      function render(rows, latencyMs) {
+        lastRows = rows;
+        const latest = rows[0];
+        const latestSt = nodeStatus(latest);
+        const perNode = NODES.map(n => {
+          const nr = rows.filter(r => r.district === n.district);
+          return { n, nr, st: nodeStatus(nr[0]) };
+        });
+        const online = perNode.filter(p => p.st.k === 'online').length;
+
+        // Banner
+        const banner = $('risk-banner'), act = $('rb-action');
+        act.style.display = 'none';
+        if (!latest) {
+          banner.className = 'risk-banner nodata';
+          $('rb-title').textContent = 'No sensor data yet';
+          $('rb-sub').textContent = 'Power up the ESP32 node or use the Expo Demo Controls below.';
+        } else {
+          const high = !latest.risk_status.includes('Safe');
+          if (latestSt.k !== 'online') {
+            banner.className = 'risk-banner stale';
+            $('rb-title').textContent = 'Sensor node ' + latestSt.label.toLowerCase() + ' \u2013 showing last known data';
+            $('rb-sub').textContent = 'Last reading ' + ago(Date.now() - latest.t.getTime()) + ' \u00b7 status was: ' + latest.risk_status;
+          } else if (high) {
+            banner.className = 'risk-banner danger';
+            $('rb-title').textContent = '\u26a0 HIGH RISK \u2013 Outbreak warning in ' + latest.district;
+            $('rb-sub').textContent = 'Turbidity ' + latest.turbidity.toFixed(1) + ' NTU \u00b7 Temp ' + latest.temperature.toFixed(1) + ' \u00b0C \u00b7 Admin approval required to alert the public.';
+            act.style.display = 'inline-block';
+          } else {
+            banner.className = 'risk-banner safe';
+            $('rb-title').textContent = 'Water quality normal in ' + latest.district;
+            $('rb-sub').textContent = 'All monitored parameters are within indicative safe limits. Live link healthy.';
+          }
+          banner.querySelector('i').className = 'fas ' + (banner.classList.contains('danger') ? 'fa-triangle-exclamation' : banner.classList.contains('safe') ? 'fa-shield-heart' : 'fa-plug-circle-exclamation');
+        }
+
+        // Overview tiles
+        $('ov-nodes').textContent = online + ' / ' + NODES.length;
+        $('ov-nodes-sub').textContent = online ? 'receiving live data' : 'no live node';
+        $('ov-sync').textContent = latest ? ago(Date.now() - latest.t.getTime()) : '--';
+        $('ov-sync-sub').textContent = latest ? latest.t.toLocaleTimeString('en-IN') : '';
+        const dayRows = rows.filter(r => Date.now() - r.t.getTime() <= 86400000);
+        $('ov-count').textContent = dayRows.length + (rows.length >= 100 ? '+' : '');
+        if (latest) {
+          const sc = safetyScore(latest);
+          $('ov-score').textContent = sc + '/100';
+          $('ov-score-sub').textContent = sc >= 80 ? 'Good' : sc >= 50 ? 'Caution' : 'Unsafe';
+          $('ov-score').style.color = sc >= 80 ? '#16a34a' : sc >= 50 ? '#d97706' : '#dc2626';
+        }
+        $('ov-api').textContent = latencyMs + ' ms';
+        $('ov-api').style.color = '#16a34a';
+        $('ov-api-sub').textContent = 'server reachable';
+
+        // Node cards
+        let html = '';
+        perNode.forEach(({ n, nr, st }) => {
+          const l = nr[0];
+          const iv = st.k === 'online' ? reportingInterval(nr) : null;
+          html += '<div class="node-card"><div class="node-head"><span class="node-title"><i class="fas fa-microchip" style="color:#3b82f6"></i> ' + esc(n.name) + '</span>' +
+            '<span class="status-pill ' + (st.live ? 'live' : '') + '" style="background:' + st.color + '"><span class="dot2"></span>' + st.label + '</span></div>' +
+            '<div class="node-meta">' + esc(n.id) + ' \u00b7 ' + esc(n.district) + ' \u00b7 ' + esc(n.hw) + '<br>' +
+            (l ? 'Last seen ' + ago(Date.now() - l.t.getTime()) + (iv ? ' \u00b7 reports every ~' + iv + 's' : '') : 'No data received \u2013 node not installed yet') + '</div>';
+          sensorHealth(l, st).forEach(s => {
+            html += '<div class="sensor-row"><span>' + s[0] + ' <small style="color:#94a3b8">(' + s[1] + ')</small></span><span class="s-state" style="color:' + s[3] + '">' + s[2] + '</span></div>';
+          });
+          html += '</div>';
+        });
+        $('node-list').innerHTML = html;
+
+        // Map
+        try {
+          Plotly.react('node-map', [{
+            type: 'scattermapbox', mode: 'markers+text',
+            lat: perNode.map(p => p.n.lat), lon: perNode.map(p => p.n.lon),
+            text: perNode.map(p => p.n.name + ' \u2013 ' + p.st.label),
+            hoverinfo: 'text', textposition: 'top center', textfont: { size: 11, color: '#0f172a' },
+            marker: { size: 20, color: perNode.map(p => p.st.color), opacity: 0.95 }
+          }], {
+            mapbox: { style: 'open-street-map', center: { lat: 26.34, lon: 91.85 }, zoom: 7 },
+            margin: { t: 0, b: 0, l: 0, r: 0 }, paper_bgcolor: 'rgba(0,0,0,0)', height: 330
+          }, { displayModeBar: false, responsive: true });
+        } catch (e) { console.warn('map', e); }
+
+        // Statistics
+        const base = dayRows.length >= 2 ? dayRows : rows.slice(0, 20);
+        $('stat-range').textContent = '(' + (dayRows.length >= 2 ? 'last 24 h' : 'last ' + base.length + ' readings') + ')';
+        const st3 = (label, arr, unit, d) => {
+          if (!arr.length) return '';
+          const mn = Math.min(...arr), mx = Math.max(...arr), av = arr.reduce((a, b) => a + b, 0) / arr.length;
+          return '<tr><td><b>' + label + '</b></td><td>' + mn.toFixed(d) + '</td><td>' + av.toFixed(d) + '</td><td>' + mx.toFixed(d) + ' ' + unit + '</td></tr>';
+        };
+        $('stat-body').innerHTML = st3('Temperature', base.map(r => r.temperature), '\u00b0C', 1) + st3('pH', base.map(r => r.ph), '', 2) + st3('Turbidity', base.map(r => r.turbidity), 'NTU', 1);
+
+        // Safety ring
+        if (latest) {
+          const sc = safetyScore(latest), col = sc >= 80 ? '#16a34a' : sc >= 50 ? '#d97706' : '#dc2626';
+          $('score-ring').style.background = 'conic-gradient(' + col + ' ' + sc * 3.6 + 'deg, #e2e8f0 0deg)';
+          $('score-num').textContent = sc;
+          $('score-text').textContent = 'Indicative water safety score from turbidity & temperature (not a lab result).';
+        }
+
+        // Turbidity chart
+        const asc = rows.slice(0, 50).reverse();
+        if (asc.length > 1) {
+          Plotly.react('turb-who-chart', [{
+            x: asc.map(r => r.t), y: asc.map(r => r.turbidity), mode: 'lines+markers', name: 'Turbidity',
+            line: { color: '#94a3b8', width: 1.5 },
+            marker: { size: 8, color: asc.map(r => r.risk_status.includes('Safe') ? '#16a34a' : r.risk_status === 'Unknown' ? '#94a3b8' : '#dc2626') },
+            text: asc.map(r => r.risk_status), hovertemplate: '%{y:.1f} NTU<br>%{text}<extra></extra>'
+          }], {
+            paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)', margin: { l: 44, r: 12, t: 8, b: 32 }, height: 260, showlegend: false,
+            yaxis: { title: 'NTU', gridcolor: '#e2e8f0' }, xaxis: { gridcolor: '#e2e8f0' },
+            shapes: [{ type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 5, y1: 5, line: { color: '#d97706', width: 2, dash: 'dash' } }]
+          }, { displayModeBar: false, responsive: true });
+        }
+
+        // Advice
+        if (latest) {
+          const high = !latest.risk_status.includes('Safe') && latestSt.k === 'online';
+          const ul = $('advice-list');
+          ul.className = 'advice-list' + (high ? ' bad' : '');
+          $('advice-title').textContent = high ? 'Precautions \u2013 High Risk Detected' : 'Public Health Advice';
+          const tips = high ? [
+            'Boil drinking water for at least 1 minute before use.',
+            'Use chlorine tablets / bleaching powder if boiling is not possible.',
+            'Avoid raw food and unwashed vegetables; wash hands with soap.',
+            'Give ORS to anyone with diarrhoea or vomiting and visit the nearest PHC.',
+            'Report symptoms to your ASHA worker or village head (Gaonburha).'
+          ] : [
+            'Water indicators are within safe limits \u2013 continue routine monitoring.',
+            'Store drinking water in clean, covered containers.',
+            'After floods or heavy rain, boil water even if the dashboard shows Safe.',
+            'Sensors indicate risk only \u2013 they do not replace laboratory tests.'
+          ];
+          ul.innerHTML = tips.map(t => '<li>' + esc(t) + '</li>').join('');
+        }
+      }
+
+      function renderAlerts() {
+        const logs = lastLogs;
+        $('ov-alerts').textContent = logs.length;
+        $('ov-alerts-sub').textContent = logs.length ? 'last: ' + ago(Date.now() - window.parseUTC(logs[0].sent_at).getTime()) : 'none sent yet';
+        if (!logs.length) return;
+        const icons = { 'SMS': 'fa-comment-sms', 'WhatsApp': 'fa-whatsapp', 'Public Push': 'fa-bell' };
+        $('alert-feed').innerHTML = logs.slice(0, 7).map(l => {
+          const col = l.status.includes('Delivered') ? '#16a34a' : l.status.includes('Failed') ? '#dc2626' : '#d97706';
+          const brand = l.channel === 'WhatsApp' ? 'fa-brands' : 'fas';
+          return '<div class="feed-item"><i class="' + brand + ' ' + (icons[l.channel] || 'fa-bell') + '"></i><div class="f-main"><b>' + esc(l.channel) + '</b> \u2192 ' + esc(l.subscriber_name) + ' <span style="color:' + col + ';font-weight:600">' + esc(l.status) + '</span></div><div class="f-time">' + ago(Date.now() - window.parseUTC(l.sent_at).getTime()) + '</div></div>';
+        }).join('');
+      }
+
+      async function refresh() {
+        try {
+          const t0 = performance.now();
+          const res = await fetch('/api/readings?limit=100');
+          const json = await res.json();
+          const lat = Math.round(performance.now() - t0);
+          if (json.status !== 'success') return;
+          render(json.data.map(d => Object.assign({}, d, { t: window.parseUTC(d.recorded_at) })), lat);
+        } catch (e) {
+          $('ov-api').textContent = 'Down';
+          $('ov-api').style.color = '#dc2626';
+          $('ov-api-sub').textContent = 'server unreachable';
+          $('risk-banner').className = 'risk-banner nodata';
+          $('rb-title').textContent = 'Cloud server unreachable';
+          $('rb-sub').textContent = 'Check the internet connection or wait for the Render server to wake up (~50 s).';
+        }
+      }
+
+      async function refreshAlerts() {
+        try {
+          const r = await fetch('/api/alert-logs?limit=200');
+          const j = await r.json();
+          if (j.status === 'success') { lastLogs = j.data; renderAlerts(); }
+          const s = await fetch('/api/subscribers?district=Nagaon');
+          const sj = await s.json();
+          if (sj.data) $('sub-count').textContent = '\u00b7 ' + sj.data.length + ' registered recipients';
+        } catch (e) { }
+      }
+
+      // ── Demo controls ──
+      const PRESETS = {
+        clean:    { turbidity_raw: 1805, ph_raw: 626, temperature_c: 27.5 },
+        moderate: { turbidity_raw: 1160, ph_raw: 626, temperature_c: 29.5 },
+        mud:      { turbidity_raw: 98,   ph_raw: 626, temperature_c: 31.0 }
+      };
+      window.expoInject = async function (kind) {
+        try {
+          const res = await fetch('/api/sensor-data', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(Object.assign({ district: 'Nagaon' }, PRESETS[kind]))
+          });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          showMessage('Simulated ' + kind + ' water packet processed by the AI pipeline.', false);
+          refresh(); refreshAlerts();
+          if (typeof fetchLive === 'function') fetchLive();
+        } catch (e) { showMessage('Demo injection failed: ' + e.message); }
+      };
+      window.expoExport = function () {
+        if (!lastRows.length) { showMessage('No readings to export yet.'); return; }
+        const head = 'time_utc,district,temperature_c,ph,turbidity_ntu,risk_status\n';
+        const body = lastRows.map(r => [r.t.toISOString(), r.district, r.temperature, r.ph, r.turbidity, '"' + r.risk_status + '"'].join(',')).join('\n');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([head + body], { type: 'text/csv' }));
+        a.download = 'aquawatch_readings.csv';
+        a.click();
+      };
+      window.expoFullscreen = function () {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen();
+      };
+
+      window.addEventListener('load', function () {
+        refresh(); refreshAlerts();
+        setInterval(refresh, 5000);
+        setInterval(refreshAlerts, 15000);
+      });
+    })();
+  </script>
 </body>
 
 </html>
